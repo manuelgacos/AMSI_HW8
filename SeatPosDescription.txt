@@ -1,0 +1,12 @@
+Car designers want to know where different drivers will position their seat. Researchers at the University of Michigan collected data on 38 drivers, and use the variable "hipcenter" as a measure of the position of the seat (i.e. this is the dependent variable Y).
+
+Age: Age in years
+Weight: Weight in lbs
+HtShoes: Height with shoes on in cm
+Ht: Height when bare foot in cm
+Seated: Seated height in cm
+Arm: lower arm length in cm
+Thigh: Thigh length in cm
+Leg: Lower leg length in cm
+hipcenter: horizontal distance of the midpoint of the hips from a
+fixed location in the car in mm.

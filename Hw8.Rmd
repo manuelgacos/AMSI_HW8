@@ -1,0 +1,129 @@
+---
+title: "Hw8"
+author: "Manuel Alejandro Garcia Acosta"
+date: "11/5/2019"
+output: pdf_document
+---
+
+We require the following packages for using the function vif().
+
+```{r }
+library(car)
+library(carData)
+```
+
+```{r }
+setwd('/home/noble_mannu/Documents/PhD/First/STAT_2131_Applied_Statistical_Methods_I/HW8')
+Data <- read.table('SeatPos.txt', header = TRUE)
+```
+
+# Exercise (e)
+
+# Part (i)
+
+## Making the multilinear regression model
+
+```{r}
+linearMod <- lm(hipcenter ~ ., data=Data)
+``` 
+
+## Displaying the summary of our model
+
+Next we display the summary of our model.
+
+```{r}
+summary(linearMod)
+```
+
+The P-Value for the null hypothesis that the coefficients for all predictors are 0 is $1.306*10^{-5}$. At a confidence level $\alpha = 0.05$ we'll reject the null hypothesis. We have a fairly high coefficient of determination $R^{2} = 0.6866$. Here we have mixed signals since the test indicates that some of the predictors actually do a good job but while checking the P-Values individually they are really high (they aren't significant).
+
+Since we have high $R^{2}$ and high P-Values for all covariates we can think that our predictor might have collinearity. We'll confirm this in the following parts of the homework. In the last part (vi) we'll see that if we drop all but one of the predictors that are highly correlated our model will improve.
+
+# Part (ii)
+
+With the model in part (i) and its output I would not say that there are any individual covariates that appear to be significantly related to hipcenter since all of them have high P-Values (all of them above the confidence level $\alpha = 0.05$).
+
+# Part (iii)
+
+Here I computed the Variance Inflation Factors (VIF) for all 8 predictors. As you'll see some of them were really large.
+
+```{r}
+vif(lm(hipcenter ~ ., data=Data))
+```
+
+In class we saw that any VIF above 10 is considered too large. This is the case of HtShoes (Height with shoes in cm) and Ht (Height when bare foot in cm). Both of them have VIF larger than 300.
+
+# Part (iv)
+
+```{r}
+test <- read.table('SeatPos.txt', header = TRUE)
+beta_v <- NULL
+
+for (i in 1:100){
+  copy <- data.frame(test)
+  noise <- rnorm( length(copy$hipcenter), mean = 0, sd = 1 )
+  copy$hipcenter <- copy$hipcenter+noise
+  linear_loop <- lm(hipcenter ~ ., data = copy)
+  beta_hs <- coef(linear_loop)[4]
+  beta_v <- c(beta_v,beta_hs)
+}
+
+beta <- coef(linearMod)[4]
+
+sqrt( (1/100)*sum( ((beta_v - beta)/beta)^2 ) )
+
+```
+
+We saw in class that $var(\hat\beta_{k}) = \frac{\sigma^{2}}{n} VIF_{k}$. This implies $VIF_{k} = \frac{n}{\sigma^{2}} var(\hat\beta_{k})$ Therefore, a large inflation factor implies a high variance for the estimate of the corresponding coefficient.
+
+# Part (v)
+
+Next I'll compute the pearson correlation matrix for the dataset. I also extract the correlation coefficient pair-wise for the predictors (HtShoes,Ht,Seaterd,Arm,Thigh and Leg). As you'll see all of these are highly correlated to one another.
+
+```{r}
+# This is the correlation matrix between all covariates
+cor(Data, method = 'pearson')
+
+# Here we extract the correlation between the predictors mentioned above
+corr <- cor(Data, method = 'pearson')
+
+corr[3,4] # HtShoes,Ht
+corr[3,5] # HtShoes,Seaterd
+corr[3,6] # HtShoes,Arm
+corr[3,7] # HtShoes,Thigh
+corr[3,8] # HtShoes,Leg
+corr[4,5] # Ht,Seaterd
+corr[4,6] # Ht,Arm
+corr[4,7] # Ht,Thigh
+corr[4,8] # Ht,Leg
+corr[5,6] # Seaterd,Arm
+corr[5,7] # Seaterd,Thigh
+corr[5,8] # Seaterd,Leg
+corr[6,7] # Arm,Thigh
+corr[6,8] # Arm,Leg
+corr[7,8] # Thigh,Leg
+
+```
+
+# Part (vi)
+
+Here I run another multilinear regression model dropping the predictors HtShoes, Seated, Arm, Thigh and Leg.
+
+## Making the new multilinear regression model by dropping several predictors
+
+```{r}
+linearMod1 <- lm(hipcenter ~ Age+Weight+Ht, data=Data)
+``` 
+
+## Displaying the summary of our model
+
+Next we display the summary of our model.
+
+```{r}
+summary(linearMod1)
+```
+
+As we can see, the coefficient of determination $R^{2}_{A} = 0.6562$ remained almost the same as in the model with all 8 predictors $R^{2}_{S} = 0.6866$. The difference is 
+$R^{2}_{S} - R^{2}_{A} = 0.0304$. The small difference can be explained by the fact that the predictors we dropped are highly correlated to Ht.
+
+The same argument holds for the change of the P-Value for Ht. Since in the other model we considered 5 predictors -HtShoes, Seated, Arm, Thigh and Leg- that were highly correlated with Ht (we can talk about multicollinearity here) it had a large P-Value as a result. After we dropped those predictors the P-Value became small and made Ht significant in the new model.
